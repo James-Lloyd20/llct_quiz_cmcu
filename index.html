@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Hệ Thống Ôn Tập Lý Luận Chính Trị - iOS Style</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Phông chữ phong cách Apple -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- 💰 MÃ NHÚNG GOOGLE ADSENSE 💰 -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8791726094368265" crossorigin="anonymous"></script> 
+
+    <!-- BLOCK NHẬN DIỆN MÁY CŨ -->
+    <script>
+        (function() {
+            function isOldDevice() {
+                var ua = navigator.userAgent;
+                var isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                if (isIOS) {
+                    var matchOS = ua.match(/OS (\d+)_/);
+                    var matchVersion = ua.match(/Version\/(\d+)\./);
+                    if (matchOS && matchOS[1] && parseInt(matchOS[1], 10) <= 14) return true;
+                    if (matchVersion && matchVersion[1] && parseInt(matchVersion[1], 10) <= 14 && navigator.maxTouchPoints > 1) return true;
+                }
+                var isMacSafari = /^((?!chrome|android).)*safari/i.test(ua) && /Mac OS X/.test(ua);
+                if (isMacSafari) {
+                    var versionMatch = ua.match(/Version\/(\d+)\./);
+                    if (versionMatch && versionMatch[1] && parseInt(versionMatch[1], 10) <= 14) return true;
+                }
+                var chromeMatch = ua.match(/Chrome\/(\d+)\./);
+                if (chromeMatch && chromeMatch[1] && parseInt(chromeMatch[1], 10) <= 85) return true;
+                
+                if (typeof CSS !== 'undefined' && CSS.supports) {
+                    if (!CSS.supports('backdrop-filter', 'blur(1px)') && !CSS.supports('-webkit-backdrop-filter', 'blur(1px)')) return true;
+                } else { return true; }
+                return false;
+            }
+
+            if (isOldDevice()) {
+                document.documentElement.classList.add('is-old-device');
+            } else {
+                var savedMode = localStorage.getItem('simpleMode');
+                if (savedMode === 'true') document.documentElement.classList.add('simple-mode');
+            }
+        })();
+    </script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { primary: '#b91c1c' },
+                    animation: {
+                        blob: "blob 15s infinite alternate",
+                    },
+                    keyframes: {
+                        blob: {
+                            "0%": { transform: "translate3d(0px, 0px, 0) scale(1)" },
+                            "33%": { transform: "translate3d(30px, -50px, 0) scale(1.1)" },
+                            "66%": { transform: "translate3d(-20px, 20px, 0) scale(0.9)" },
+                            "100%": { transform: "translate3d(0px, 0px, 0) scale(1)" }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* CSS CƠ BẢN VÀ TỐI ƯU HÓA */
+        body { 
+            font-family: 'Inter', sans-serif; 
+            -webkit-text-size-adjust: 100%;
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior-y: none;
+        }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .overflow-x-auto { -webkit-overflow-scrolling: touch; }
+
+        html.is-old-device body { background: #f8fafc !important; }
+        html.is-old-device #mainAppWrapper { display: none !important; }
+        html:not(.is-old-device) #unsupportedScreen { display: none !important; }
+
+        .glass-panel, .glass-button, .glass-input, .glass-action-btn, .glass-tooltip, .glass-tooltip::after {
+            transition: background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease !important;
+            transform: translateZ(0); 
+            will-change: transform, opacity;
+        }
+
+        .animate-blob {
+            transform: translateZ(0);
+            will-change: transform;
+            backface-visibility: hidden;
+            perspective: 1000px;
+        }
+
+        /* LIQUID GLASS EFFECTS (Áp dụng cho Sáng / Tối) - Đã giảm Blur để tăng FPS (Khung hình/giây) */
+        .glass-panel {
+            background-color: transparent;
+            background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
+            backdrop-filter: blur(16px) saturate(150%);
+            -webkit-backdrop-filter: blur(16px) saturate(150%);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.9), inset 0 2px 20px rgba(255, 255, 255, 0.8), 0 10px 40px 0 rgba(31, 38, 135, 0.05);
+        }
+        
+        .glass-button {
+            background-color: transparent;
+            background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.5) 100%);
+            backdrop-filter: blur(12px) saturate(150%);
+            -webkit-backdrop-filter: blur(12px) saturate(150%);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.9), inset 0 2px 10px rgba(255, 255, 255, 0.8), 0 4px 16px 0 rgba(31, 38, 135, 0.05);
+        }
+
+        .glass-input {
+            background-color: transparent;
+            background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.3) 100%);
+            backdrop-filter: blur(12px) saturate(150%);
+            -webkit-backdrop-filter: blur(12px) saturate(150%);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.05), 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+
+        .dark .glass-panel {
+            background-color: transparent;
+            background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.55) 0%, rgba(15, 23, 42, 0.25) 100%);
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.15), inset 0 0 15px rgba(255, 255, 255, 0.05), 0 10px 40px 0 rgba(0, 0, 0, 0.6);
+        }
+        
+        .dark .glass-button {
+            background-color: transparent;
+            background-image: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.3) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.2), inset 0 1px 3px rgba(255, 255, 255, 0.15), 0 4px 16px 0 rgba(0, 0, 0, 0.4);
+        }
+
+        .dark .glass-input {
+            background-color: transparent;
+            background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(15, 23, 42, 0.2) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6), 0 1px 0 rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-action-btn {
+            background-color: transparent;
+            background-image: linear-gradient(135deg, rgba(178, 42, 97, 0.85) 0%, rgba(135, 23, 67, 0.85) 100%);
+            backdrop-filter: blur(12px) saturate(200%);
+            -webkit-backdrop-filter: blur(12px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.6), inset 0 1px 5px rgba(255, 255, 255, 0.3), 0 4px 15px rgba(178, 42, 97, 0.3);
+        }
+        .dark .glass-action-btn {
+            background-color: transparent;
+            background-image: linear-gradient(135deg, rgba(178, 42, 97, 0.75) 0%, rgba(135, 23, 67, 0.4) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.3), inset 0 1px 3px rgba(255, 255, 255, 0.2), 0 4px 15px rgba(0, 0, 0, 0.4);
+        }
+        
+        .glass-action-btn:not(:disabled):hover { 
+            filter: brightness(1.2); 
+            transform: scale(1.03) translateY(-1px);
+            box-shadow: inset 0 1px 5px rgba(255, 255, 255, 0.4), 0 8px 20px rgba(178, 42, 97, 0.4);
+        }
+
+        .glass-tooltip {
+            background-color: transparent;
+            background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.6) 100%);
+            backdrop-filter: blur(24px) saturate(150%);
+            -webkit-backdrop-filter: blur(24px) saturate(150%);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.9), 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .glass-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 14px;
+            right: -6.5px;
+            width: 12px;
+            height: 12px;
+            background-color: transparent;
+            background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.4) 100%);
+            backdrop-filter: blur(24px) saturate(150%);
+            -webkit-backdrop-filter: blur(24px) saturate(150%);
+            border-top: 1px solid rgba(255, 255, 255, 0.8);
+            border-right: 1px solid rgba(255, 255, 255, 0.8);
+            transform: rotate(45deg);
+            border-top-right-radius: 2px;
+            clip-path: polygon(0 0, 100% 0, 100% 100%);
+        }
+        .dark .glass-tooltip {
+            background-color: transparent;
+            background-image: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.4) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: inset 1px 1px 0px rgba(255, 255, 255, 0.2), 0 10px 20px rgba(0,0,0,0.4);
+        }
+        .dark .glass-tooltip::after {
+            background-color: transparent;
+            background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.6) 0%, rgba(15, 23, 42, 0.3) 100%);
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            border-right: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        /* SIMPLE MODE */
+        html.simple-mode #animatedBackgrounds { opacity: 0 !important; visibility: hidden !important; transition: opacity 0.5s ease, visibility 0.5s ease !important; }
+        html:not(.simple-mode) #animatedBackgrounds { opacity: 1 !important; visibility: visible !important; transition: opacity 0.5s ease, visibility 0.5s ease !important; }
+        
+        html.simple-mode body { background-color: #f8fafc !important; }
+        html.dark.simple-mode body { background-color: #0f172a !important; }
+
+        html.simple-mode .glass-panel, html.simple-mode .glass-button, html.simple-mode .glass-input, html.simple-mode .glass-action-btn, html.simple-mode .glass-tooltip, html.simple-mode .glass-tooltip::after {
+            backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+        }
+
+        html.simple-mode #simpleHeaderBg { opacity: 1 !important; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        html.simple-mode #mainHeader h1, html.simple-mode #mainHeader p, html.simple-mode #mainHeader span { color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; text-shadow: none !important; }
+        html.simple-mode #mainHeader .glass-panel { background-color: rgba(255, 255, 255, 0.1) !important; border: 1px solid rgba(255, 255, 255, 0.2) !important; box-shadow: none !important; }
+        html.simple-mode #mainHeader i.fa-university { color: #fde047 !important; }
+        html.simple-mode #mainHeader .glass-input { background-color: #ffffff !important; border: 1px solid rgba(255,255,255,0.2) !important; color: #0f172a !important; }
+        html.dark.simple-mode #mainHeader .glass-input { background-color: #1e293b !important; border: 1px solid #334155 !important; color: #ffffff !important; }
+
+        html.simple-mode .glass-panel, html.simple-mode .glass-tooltip { background-color: #ffffff !important; border: 1px solid #f1f5f9 !important; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important; background-image: none !important; }
+        html.simple-mode .glass-tooltip::after { background-color: #ffffff !important; border-top: 1px solid #f1f5f9 !important; border-right: 1px solid #f1f5f9 !important; background-image: none !important; }
+        html.simple-mode .glass-panel:not(.group):hover { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important; }
+        html.simple-mode .glass-button { background-color: #f1f5f9 !important; border: 1px solid #e2e8f0 !important; box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important; background-image: none !important; }
+        html.simple-mode .glass-input { background-color: #ffffff !important; border: 1px solid #cbd5e1 !important; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02) !important; background-image: none !important; }
+        html.simple-mode .glass-action-btn { background-color: #b91c1c !important; border: 1px solid #9f1239 !important; box-shadow: 0 4px 6px -1px rgba(185, 28, 28, 0.2) !important; background-image: none !important; }
+        html.simple-mode .glass-action-btn:hover { background-color: #9f1239 !important; box-shadow: 0 10px 15px -3px rgba(185, 28, 28, 0.3) !important; }
+
+        @keyframes scaleFadeIn {
+            0% { opacity: 0; transform: scale(0.95) translateY(15px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .animate-tab-switch { opacity: 0; } 
+        .animate-tab-switch.show { animation: scaleFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        html.simple-mode .animate-tab-switch.show { animation: none !important; opacity: 1 !important; transform: none !important; }
+
+        .animation-delay-2000 { animation-delay: 2s; }
+        .animation-delay-4000 { animation-delay: 4s; }
+
+        .settings-collapsed #settingsContent { max-height: 0; opacity: 0; padding-top: 0 !important; padding-bottom: 0 !important; margin-top: 0 !important; pointer-events: none; }
+        .settings-collapsed #settingsChevron { transform: rotate(180deg); }
+        .settings-collapsed #settingsGearIcon { transform: rotate(90deg); }
+    </style>
+</head>
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300 relative overflow-x-hidden">
+
+    <!-- MÀN HÌNH DÀNH RIÊNG CHO THIẾT BỊ CŨ -->
+    <div id="unsupportedScreen" class="min-h-screen w-full bg-slate-50 text-slate-900 flex flex-col items-center pt-16 px-4 pb-10">
+        <div class="max-w-2xl w-full text-center">
+            <i class="fas fa-exclamation-triangle text-6xl text-red-600 mb-5"></i>
+            <h1 class="text-xl md:text-2xl font-bold text-red-700 mb-8 uppercase leading-relaxed border-b-2 border-red-200 pb-6">
+                Rất tiếc, thiết bị của bạn đang ở phiên bản trình duyệt quá cũ.<br>
+                <span class="text-slate-700 text-lg md:text-xl mt-2 block">Vui lòng cập nhật trình duyệt lên phiên bản mới nhất để sử dụng đầy đủ tính năng.</span>
+            </h1>
+            <p class="text-slate-600 font-medium mb-6 text-sm md:text-base">Dưới đây là các đường dẫn dự phòng để bạn vẫn có thể tiếp tục ôn tập:</p>
+            <div id="basicQuizList" class="text-left space-y-6"></div>
+        </div>
+    </div>
+
+    <!-- KHUNG GIAO DIỆN CHÍNH -->
+    <div id="mainAppWrapper" class="w-full flex flex-col min-h-screen">
+        
+        <!-- PHÔNG NỀN BONG BÓNG -->
+        <div id="animatedBackgrounds" class="fixed inset-0 w-full h-full z-0 overflow-hidden pointer-events-none transition-opacity duration-500">
+            <div class="absolute top-[-10%] left-[-10%] w-[120vw] h-[100vw] md:w-[70vw] md:h-[60vw] rounded-full bg-red-400/30 dark:bg-red-700/40 blur-[100px] md:blur-[140px] animate-blob"></div>
+            <div class="absolute top-[20%] right-[-10%] w-[100vw] h-[100vw] md:w-[60vw] md:h-[60vw] rounded-full bg-pink-400/20 dark:bg-rose-700/30 blur-[100px] md:blur-[140px] animate-blob animation-delay-2000"></div>
+            <div class="absolute bottom-[-10%] left-[-10%] w-[110vw] h-[90vw] md:w-[60vw] md:h-[50vw] rounded-full bg-yellow-300/30 dark:bg-orange-600/30 blur-[100px] md:blur-[140px] animate-blob animation-delay-4000"></div>
+
+            <div class="absolute top-[8%] right-[2%] md:right-[5%] text-[50vw] md:text-[35vw] text-amber-400/60 dark:text-amber-400/40 animate-float select-none blur-[8px] md:blur-[12px] mix-blend-screen" style="line-height: 1; font-family: sans-serif; text-shadow: 0 0 40px rgba(250,204,21,0.6), 0 0 80px rgba(249,115,22,0.4);">☭</div>
+            <div class="absolute bottom-[5%] left-[2%] md:left-[5%] text-[45vw] md:text-[30vw] text-yellow-400/60 dark:text-yellow-400/40 animate-float animation-delay-2000 select-none blur-[8px] md:blur-[12px] mix-blend-screen" style="line-height: 1; font-family: sans-serif; text-shadow: 0 0 40px rgba(250,204,21,0.6), 0 0 80px rgba(249,115,22,0.4);">★</div>
+        </div>
+
+        <!-- BẢNG CÀI ĐẶT -->
+        <div class="fixed top-4 right-4 md:top-6 md:right-8 z-[100] flex items-start justify-end pointer-events-none">
+            <div id="settingsTooltip" class="mr-3 mt-1 glass-tooltip px-3.5 py-3 md:px-4 md:py-3.5 rounded-2xl text-[11px] md:text-xs font-semibold transition-all duration-500 opacity-0 translate-x-4 relative w-max max-w-[200px] sm:max-w-[220px] md:max-w-[280px] pointer-events-auto leading-relaxed text-slate-800 dark:text-slate-200 z-[101]">
+                Nếu bị Khựng Lag, bạn có thể bật chế độ "Đơn giản" lên để trải nghiệm được mượt mà hơn nhé :D
+            </div>
+            <div id="settingsPanel" class="flex flex-col glass-panel rounded-[1.5rem] transition-[background-color,border-color,box-shadow,transform] duration-300 shadow-lg overflow-hidden w-[160px] md:w-[170px] pointer-events-auto">
+                <div id="settingsHeader" class="flex items-center justify-center space-x-2 px-4 py-3 cursor-pointer select-none hover:bg-slate-500/5 dark:hover:bg-white/5 transition-colors duration-300">
+                    <i id="settingsGearIcon" class="fas fa-cog text-slate-700 dark:text-slate-300 transition-transform duration-500"></i>
+                    <span class="text-xs md:text-sm font-bold opacity-90 transition-colors duration-300">Cài đặt</span>
+                    <i id="settingsChevron" class="fas fa-chevron-up text-[10px] text-slate-500 transition-transform duration-500 pt-0.5"></i>
+                </div>
+                <div id="settingsContent" class="flex flex-col space-y-3 px-4 pb-3 transition-[max-height,opacity,padding,margin] duration-500 max-h-[150px] opacity-100 origin-top overflow-hidden">
+                    <div class="w-full h-px bg-slate-300/50 dark:bg-slate-600/50 mb-2 transition-colors duration-300"></div>
+                    <div class="flex items-center justify-between space-x-4">
+                        <span class="text-xs md:text-sm font-bold opacity-90 select-none transition-colors duration-300">Giao diện</span>
+                        <button id="themeToggle" class="relative w-12 h-6 md:w-10 md:h-5 rounded-full bg-slate-900/10 dark:bg-black/50 hover:bg-slate-900/20 dark:hover:bg-black/70 transition-colors duration-300 focus:outline-none shadow-inner ring-1 ring-black/5 dark:ring-white/10" title="Chuyển đổi Sáng/Tối">
+                            <div id="themeThumb" class="absolute top-[2px] left-[2px] w-5 h-5 md:w-4 md:h-4 bg-white rounded-full shadow-sm flex items-center justify-center transform transition-transform duration-300 ease-in-out translate-x-0">
+                                <i id="themeIcon" class="fas fa-sun text-amber-500 text-[10px] md:text-[8px] transition-colors duration-300"></i>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-between space-x-4">
+                        <span class="text-xs md:text-sm font-bold opacity-90 select-none transition-colors duration-300">Đơn giản</span>
+                        <button id="perfToggle" class="relative w-12 h-6 md:w-10 md:h-5 rounded-full bg-slate-900/10 dark:bg-black/50 hover:bg-slate-900/20 dark:hover:bg-black/70 transition-colors duration-300 focus:outline-none shadow-inner ring-1 ring-black/5 dark:ring-white/10" title="Bật/Tắt đồ họa nặng">
+                            <div id="perfThumb" class="absolute top-[2px] left-[2px] w-5 h-5 md:w-4 md:h-4 bg-white rounded-full shadow-sm flex items-center justify-center transform transition-transform duration-300 ease-in-out translate-x-0">
+                                <i id="perfIcon" class="fas fa-magic text-purple-500 text-[10px] md:text-[8px] transition-colors duration-300"></i>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VÙNG NỘI DUNG CHÍNH (Đã cấp quyền z-20 cho Header để thanh tìm kiếm dễ bấm 100%) -->
+        <div class="relative z-10 flex flex-col min-h-screen">
+            <header id="mainHeader" class="w-full relative z-20">
+                <div id="simpleHeaderBg" class="absolute inset-0 w-full h-full opacity-0 transition-opacity duration-300 pointer-events-none z-[-1] bg-gradient-to-r from-red-900 via-primary to-red-700"></div>
+                
+                <div class="pt-24 md:pt-28 pb-8 md:pb-12 px-4 sm:px-6 lg:px-8 text-center max-w-4xl mx-auto w-full transition-colors duration-300">
+                    <div class="inline-flex p-3 md:p-4 glass-panel rounded-full mb-4 md:mb-6 transform scale-90 md:scale-100">
+                        <i class="fas fa-university text-3xl md:text-4xl text-amber-500 dark:text-amber-400 drop-shadow-md transition-colors duration-300"></i>
+                    </div>
+                    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-3 md:mb-4 tracking-tight drop-shadow-sm text-slate-900 dark:text-white leading-tight transition-colors duration-300">
+                        LÝ LUẬN CHÍNH TRỊ <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-pink-600 dark:from-red-400 dark:to-pink-400 block sm:inline mt-1 sm:mt-0 transition-colors duration-300">& PHÁP LUẬT</span>
+                    </h1>
+                    <p class="text-lg md:text-xl lg:text-2xl font-bold mb-3 text-slate-800 dark:text-slate-100 opacity-90 transition-colors duration-300">
+                        LINK QUIZIZZ ÔN TẬP
+                    </p>
+                    <p class="text-xs sm:text-sm lg:text-base font-semibold italic opacity-80 max-w-2xl mx-auto leading-relaxed px-2 text-slate-700 dark:text-slate-300 transition-colors duration-300">
+                        DỰ ÁN VÌ CỘNG ĐỒNG SV CMCU<br>
+                        AD SẼ CỐ GẮNG SUPPORT CÁC BẠN ĐẾN HẾT NĂM 2028 NHA<br>
+                        <span class="block mt-3 font-extrabold text-rose-600 dark:text-amber-400 not-italic text-sm md:text-base drop-shadow-sm transition-colors duration-300">
+                            Vì là một dự án cá nhân nhỏ nên sẽ rất khó tránh khỏi sai sót, mình rất mong mọi người thông cảm và báo cáo lại khi phát hiện thấy sai sót giúp mình nhé! ❤️
+                        </span>
+                    </p>
+                    <div class="mt-8 md:mt-10 max-w-xl mx-auto relative group px-2 sm:px-4 md:px-0">
+                        <div class="absolute inset-y-0 left-2 sm:left-4 md:left-0 pl-5 flex items-center pointer-events-none z-10">
+                            <i class="fas fa-search text-slate-500 dark:text-slate-300 group-focus-within:text-red-500 transition-colors duration-300"></i>
+                        </div>
+                        <input type="text" id="searchInput" 
+                            class="block w-full pl-12 md:pl-14 pr-6 py-3.5 md:py-4 rounded-full glass-input shadow-[0_8px_30px_rgba(0,0,0,0.04)] focus:outline-none focus:ring-2 focus:ring-red-400/50 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 text-base lg:text-lg font-medium" 
+                            placeholder="Tìm kiếm bài ôn tập, chương học...">
+                    </div>
+                </div>
+            </header>
+
+            <main class="flex-grow max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full pb-16 pt-4 relative z-10">
+                
+                <!-- 💰 KHU VỰC QUẢNG CÁO 1: Nằm dưới thanh tìm kiếm, trên các Tabs 💰 -->
+                <div class="max-w-3xl mx-auto mb-8 md:mb-10 w-full rounded-2xl glass-panel p-2 overflow-hidden flex justify-center items-center min-h-[90px] relative">
+                    <span class="absolute text-[10px] text-slate-400 dark:text-slate-500 top-1 right-2 uppercase tracking-wider font-semibold z-0">Tài trợ dự án</span>
+                    <div class="w-full relative z-10">
+                        <!-- QC1 -->
+                        <ins class="adsbygoogle"
+                             style="display:block"
+                             data-ad-client="ca-pub-8791726094368265"
+                             data-ad-slot="1613026220"
+                             data-ad-format="auto"
+                             data-full-width-responsive="true"></ins>
+                        <script>
+                             (adsbygoogle = window.adsbygoogle || []).push({});
+                        </script>
+                    </div>
+                </div>
+                
+                <!-- TABS CÓ KHUNG CUỘN BO TRÒN -->
+                <div class="glass-panel rounded-[2rem] p-1.5 md:p-2 mb-8 md:mb-10 mx-auto max-w-full w-full sm:w-fit overflow-hidden shadow-sm">
+                    <div class="overflow-x-auto no-scrollbar rounded-[1.5rem] md:rounded-[1.75rem]">
+                        <div class="flex space-x-2 p-1 relative min-w-max" id="categoryTabs"></div>
+                    </div>
+                </div>
+
+                <!-- VÙNG HIỂN THỊ THẺ -->
+                <div id="quizContainer" class="flex flex-wrap -mx-2 sm:-mx-3 md:-mx-4"></div>
+
+                <div id="emptyState" class="hidden text-center py-20 md:py-24 glass-panel rounded-3xl mt-8 mx-4 sm:mx-0 w-full">
+                    <i class="fas fa-ghost text-5xl md:text-6xl text-slate-400/60 dark:text-slate-500/60 mb-5 md:mb-6 drop-shadow-sm"></i>
+                    <h3 class="text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100">Không tìm thấy kết quả</h3>
+                    <p class="text-sm md:text-base text-slate-600 dark:text-slate-300 mt-2 font-medium">Hãy thử lại bằng một từ khóa khác xem sao nhé.</p>
+                </div>
+
+                <div class="mt-16 md:mt-20 flex flex-wrap -mx-3 md:-mx-4">
+                    <div class="w-full lg:w-1/2 px-3 md:px-4 mb-6 lg:mb-0 flex">
+                        <div class="w-full glass-panel rounded-[2rem] p-6 md:p-8 flex flex-col justify-between hover:-translate-y-1 group block">
+                            <div>
+                                <div class="w-10 h-10 md:w-12 md:h-12 glass-button rounded-2xl flex items-center justify-center mb-5 md:mb-6 text-red-600 dark:text-red-400">
+                                    <i class="fas fa-bug text-lg md:text-xl"></i>
+                                </div>
+                                <h4 class="text-xl md:text-2xl font-extrabold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-red-600 to-rose-500 dark:from-red-400 dark:to-rose-300">BÁO CÁO LỖI QUIZIZZ</h4>
+                                <p class="text-sm md:text-base text-slate-800 dark:text-slate-200 mb-2 font-semibold">Bạn vui lòng báo cáo cho ad biết nếu có sự cố bằng cách nhấp vào nút "Báo cáo lỗi" nhé!</p>
+                                <p class="text-sm md:text-base text-slate-800 dark:text-slate-200 mb-4 font-semibold">Cảm ơn phản hồi của bạn, ad sẽ mau chóng khắc phục :D</p>
+                                <p class="text-[11px] md:text-xs text-slate-600 dark:text-slate-400 font-mono italic font-medium mb-6 md:mb-8">*TG tiếp nhận & xử lý: 08:00 - 22:00 (UTC +7)</p>
+                            </div>
+                            <a href="https://docs.google.com/forms/d/e/1FAIpQLScg5Lrhl0vxBU0HjefZp7CIgegc6K4pz3RJ0l7hBid1bBSCiQ/viewform?usp=dialog" target="_blank" rel="noopener noreferrer" 
+                               class="glass-action-btn w-full py-3.5 rounded-xl text-center font-bold text-base md:text-lg mt-auto shadow-md block">
+                                <i class="fas fa-paper-plane mr-2"></i> Gửi Báo Cáo Ngay
+                            </a>
+                        </div>
+                    </div>
+                    <div class="w-full lg:w-1/2 px-3 md:px-4 flex">
+                        <div class="w-full glass-panel rounded-[2rem] p-6 md:p-8 flex flex-col justify-between hover:-translate-y-1 block">
+                            <div>
+                                <div class="w-10 h-10 md:w-12 md:h-12 glass-button rounded-2xl flex items-center justify-center mb-5 md:mb-6 text-blue-600 dark:text-blue-400">
+                                    <i class="fas fa-lightbulb text-lg md:text-xl"></i>
+                                </div>
+                                <h4 class="text-xl md:text-2xl font-extrabold mb-3 text-slate-900 dark:text-white uppercase">BẠN CÓ THẮC MẮC?</h4>
+                                <p class="text-sm md:text-base text-slate-700 dark:text-slate-200 italic leading-relaxed mb-6 md:mb-8 font-medium">
+                                    "Mục đích của trang web này nhằm cung cấp đến các bạn công cụ đã được mình chắt lọc từ file đề cương của nhà trường, rồi input data vào Quizizz để mọi người dễ dàng học thuộc những môn Triết học khô khan :D"
+                                </p>
+                            </div>
+                            <div class="inline-flex justify-center w-full mt-auto">
+                                <div class="px-4 py-3.5 md:px-6 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold shadow-[0_4px_15px_rgba(245,158,11,0.4)] text-center w-full text-sm md:text-base">
+                                    ✨ Có công mài sắt, có ngày nên kim
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 💰 KHU VỰC QUẢNG CÁO 2: Ngay sát trên Footer 💰 -->
+                <div class="mt-12 w-full mx-auto rounded-[2rem] glass-panel p-3 overflow-hidden flex justify-center items-center min-h-[100px] relative">
+                    <span class="absolute text-[10px] text-slate-400 dark:text-slate-500 top-1.5 right-3 uppercase tracking-wider font-semibold z-0">Tài trợ dự án</span>
+                    <div class="w-full relative z-10">
+                        <!-- QC2 -->
+                        <ins class="adsbygoogle"
+                             style="display:block"
+                             data-ad-client="ca-pub-8791726094368265"
+                             data-ad-slot="6506260251"
+                             data-ad-format="auto"
+                             data-full-width-responsive="true"></ins>
+                        <script>
+                             (adsbygoogle = window.adsbygoogle || []).push({});
+                        </script>
+                    </div>
+                </div>
+
+            </main>
+
+            <!-- FOOTER -->
+            <footer class="mt-auto border-t border-white/30 dark:border-white/10 glass-panel !rounded-none !border-x-0 !border-b-0 py-8 md:py-12 text-center pb-12 sm:pb-12 w-full">
+                <div class="max-w-6xl mx-auto px-4 sm:px-6">
+                    <h4 class="text-slate-900 dark:text-white font-extrabold mb-6 md:mb-8 tracking-widest uppercase text-xl md:text-2xl opacity-90">LIÊN HỆ HỖ TRỢ</h4>
+                    
+                    <div class="flex flex-col lg:flex-row justify-center items-stretch lg:items-center gap-3 md:gap-4 text-sm md:text-base font-bold w-full mx-auto max-w-5xl">
+                        <a href="mailto:wakeful-clots8g@icloud.com" class="shrink-0 w-full lg:w-auto glass-button px-5 sm:px-6 py-4 rounded-2xl lg:rounded-full shadow-md hover:-translate-y-1.5 hover:shadow-lg transition-all duration-300 text-slate-800 dark:text-slate-100 flex items-center justify-center">
+                            <i class="fas fa-envelope text-rose-600 dark:text-rose-400 mr-2.5 text-lg flex-shrink-0"></i> 
+                            <span class="whitespace-nowrap flex-shrink-0">wakeful-clots8g@icloud.com</span>
+                        </a>
+                        
+                        <a href="https://t.me/JamesLloyd20" target="_blank" rel="noopener noreferrer" class="shrink-0 w-full lg:w-auto glass-button px-5 sm:px-6 py-4 rounded-2xl lg:rounded-full shadow-md hover:-translate-y-1.5 hover:shadow-lg transition-all duration-300 text-slate-800 dark:text-slate-100 flex items-center justify-center">
+                            <i class="fab fa-telegram text-blue-600 dark:text-blue-400 mr-2.5 text-lg flex-shrink-0"></i> 
+                            <span class="whitespace-nowrap flex-shrink-0">@JamesLloyd20</span>
+                        </a>
+                        
+                        <div class="w-full lg:w-auto flex justify-center items-center glass-button px-5 sm:px-6 py-4 rounded-2xl lg:rounded-full shadow-md hover:-translate-y-1.5 hover:shadow-lg transition-all duration-300 text-slate-800 dark:text-slate-100 cursor-default min-w-0">
+                            <i class="fas fa-comment-dots text-green-600 dark:text-green-400 mr-2.5 text-lg flex-shrink-0"></i> 
+                            <span class="whitespace-normal xl:whitespace-nowrap text-center leading-relaxed">Zalo: "Bạn chịu khó liên hệ qua Email / Telegram nhé" :D</span>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div> 
+
+    <!-- POPUP MODAL HOẠT ĐỘNG HOÀN HẢO -->
+    <div id="disclaimerModal" class="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none px-4">
+        <div id="disclaimerOverlay" class="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md opacity-0 transition-opacity duration-300 ease-out"></div>
+        <div id="disclaimerContent" class="relative w-full max-w-md glass-panel rounded-[2rem] p-6 md:p-8 shadow-2xl opacity-0 scale-95 transition-all duration-300 ease-out">
+            <div class="w-12 h-12 rounded-full glass-button flex items-center justify-center mx-auto mb-5 text-rose-500 dark:text-rose-400">
+                <i class="fas fa-heart text-xl"></i>
+            </div>
+            <h3 class="text-xl md:text-2xl font-extrabold text-center text-slate-900 dark:text-white mb-4">Một chút lưu ý nhỏ xíu...</h3>
+            <div class="text-sm md:text-base text-slate-700 dark:text-slate-200 mb-8 leading-relaxed font-medium space-y-4">
+                <p class="text-center">Đây chỉ là một dự án cá nhân nhỏ nhằm đóng góp cho cộng đồng sinh viên CMCU tụi mình, nên đôi khi trong quá trình làm data sẽ không thể tránh khỏi sự sai sót về đáp án.</p>
+                <p class="text-center">Mình rất mong các bạn hiểu và thông cảm. Nếu bạn nhận thấy có câu hỏi nào bị sai, hãy nhẹ nhàng nhấn vào nút <strong class="text-rose-600 dark:text-rose-400 font-extrabold">Báo cáo lỗi</strong> để mình sửa lại ngay nhé! Mình luôn sẵn sàng lắng nghe sự góp ý từ các bạn.</p>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button id="btnCancel" class="w-full sm:w-1/2 py-3.5 px-4 glass-button rounded-xl font-bold text-slate-700 dark:text-slate-300 text-sm shadow-sm order-2 sm:order-1 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors">Ko đồng ý và thoát</button>
+                <button id="btnAgree" class="w-full sm:w-1/2 py-3.5 px-4 glass-action-btn rounded-xl font-bold text-sm shadow-md order-1 sm:order-2">Mình đồng ý</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIC XỬ LÝ SIÊU TỐI ƯU -->
+    <script>
+        const courseData = [
+            { id: 'all', name: 'Tất cả', icon: 'fa-layer-group' },
+            {
+                id: 'triet-hoc',
+                name: 'Triết học Mác - Lênin',
+                icon: 'fa-book',
+                quizzes: [
+                    { title: 'Triết học Mác-Lênin (Giữa kì)', questions: 'Giữa kì', desc: 'Mẹo ôn: mọi người nên ôn Flashcards trước, ôn quiz sau sẽ giúp mọi người dễ dàng ghi nhớ hơn!', flashcardLink: 'https://wayground.com/join?gc=21570270', quizLink: 'https://wayground.com/join?gc=29631198' },
+                    { title: 'Triết học Mác-Lênin (Cuối kì)', questions: 'Cuối kì', desc: 'Mẹo ôn: mọi người nên ôn Flashcards trước, ôn quiz sau sẽ giúp mọi người dễ dàng ghi nhớ hơn!', flashcardLink: 'https://wayground.com/join?gc=66856798', quizLink: 'https://wayground.com/join?gc=22111070' }
+                ]
+            },
+            {
+                id: 'lsd',
+                name: 'Lịch sử Đảng Cộng sản Việt Nam',
+                icon: 'fa-flag',
+                quizzes: [
+                    { title: 'LS Đảng Cộng Sản VN (Giữa kì & Cuối kì)', questions: 'Giữa & Cuối kì', desc: 'Mẹo ôn: mọi người nên ôn Flashcards trước, ôn quiz sau sẽ giúp mọi người dễ dàng ghi nhớ hơn!', history: ['04/01/26 - 13:05: Sửa lỗi hiển thị sai date format', '09/05/26: Sửa lỗi hiển thị sai date format', '11/05/26: Sửa một số câu hỏi bị chọn sai đáp án'], flashcardLink: 'https://wayground.com/join?gc=17925054', quizLink: 'https://wayground.com/join?gc=65725265' }
+                ]
+            },
+            {
+                id: 'tthm',
+                name: 'Tư tưởng Hồ Chí Minh',
+                icon: 'fa-star',
+                quizzes: [
+                    { title: 'Tư tưởng Hồ Chí Minh (Giữa kì)', questions: 'Giữa kì', desc: 'Mẹo ôn: mọi người nên ôn Flashcards trước, ôn quiz sau sẽ giúp mọi người dễ dàng ghi nhớ hơn!', isUpcoming: true, releaseDate: '14/06/2026' },
+                    { title: 'Tư tưởng Hồ Chí Minh (Cuối kì)', questions: 'Cuối kì', desc: 'Mẹo ôn: mọi người nên ôn Flashcards trước, ôn quiz sau sẽ giúp mọi người dễ dàng ghi nhớ hơn!', isUpcoming: true, releaseDate: '14/06/2026' }
+                ]
+            },
+            {
+                id: 'pldc',
+                name: 'Pháp luật đại cương',
+                icon: 'fa-scale-balanced',
+                quizzes: [
+                    { title: 'Pháp luật đại cương (Giữa kì)', questions: 'Giữa kì', desc: 'Mẹo ôn: mọi người nên ôn Flashcards trước, ôn quiz sau sẽ giúp mọi người dễ dàng ghi nhớ hơn!', isUpcoming: true, releaseDate: '14/06/2026' },
+                    { title: 'Pháp luật đại cương (Cuối kì)', questions: 'Cuối kì', desc: 'Mẹo ôn: mọi người nên ôn Flashcards trước, ôn quiz sau sẽ giúp mọi người dễ dàng ghi nhớ hơn!', isUpcoming: true, releaseDate: '14/06/2026' }
+                ]
+            }
+        ];
+
+        let currentCategory = 'all';
+        let searchQuery = '';
+
+        function init() {
+            if (document.documentElement.classList.contains('is-old-device')) {
+                renderBasicFallbackScreen();
+                return;
+            }
+
+            initSettings();
+            renderTabs();
+            buildQuizzes(); 
+
+            let searchTimeout;
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    searchQuery = e.target.value.toLowerCase().trim();
+                    filterQuizzes(); 
+                }, 200); 
+            });
+        }
+
+        function renderBasicFallbackScreen() {
+            const container = document.getElementById('basicQuizList');
+            if (!container) return;
+            let htmlContent = '';
+            courseData.forEach(category => {
+                if (category.id === 'all' || !category.quizzes || category.quizzes.length === 0) return;
+                htmlContent += `<div class="mb-8"><h2 class="text-lg md:text-xl font-bold text-slate-800 border-l-4 border-red-600 pl-3 mb-4">${category.name}</h2><div class="space-y-4 pl-0 sm:pl-4">`;
+                category.quizzes.forEach(quiz => {
+                    htmlContent += `
+                        <div class="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-slate-200">
+                            <h3 class="font-bold text-slate-900 mb-3 text-base md:text-lg">${quiz.title}</h3>
+                            <div class="flex flex-wrap gap-2 md:gap-3 mt-4">
+                                ${quiz.isUpcoming ? `
+                                <div class="opacity-60 cursor-not-allowed">
+                                    <button disabled class="pointer-events-none text-sm bg-slate-100 text-slate-700 px-4 py-2 rounded-lg font-bold border border-slate-300">Flashcards</button>
+                                </div>
+                                <div class="opacity-60 cursor-not-allowed">
+                                    <button disabled class="pointer-events-none text-sm bg-red-600 text-white px-4 py-2 rounded-lg font-bold border border-red-700">Quizizz Ôn Tập</button>
+                                </div>
+                                ` : `
+                                <a href="${quiz.flashcardLink}" target="_blank" class="text-sm bg-slate-100 text-slate-700 px-4 py-2 rounded-lg font-bold border border-slate-300">Flashcards</a>
+                                <a href="${quiz.quizLink}" target="_blank" class="text-sm bg-red-600 text-white px-4 py-2 rounded-lg font-bold border border-red-700">Quizizz Ôn Tập</a>
+                                `}
+                            </div>
+                        </div>`;
+                });
+                htmlContent += `</div></div>`;
+            });
+            container.innerHTML = htmlContent;
+        }
+
+        function initSettings() {
+            const themeToggleBtn = document.getElementById('themeToggle');
+            const themeThumb = document.getElementById('themeThumb');
+            const themeIcon = document.getElementById('themeIcon');
+            const perfToggleBtn = document.getElementById('perfToggle');
+            const perfThumb = document.getElementById('perfThumb');
+            const perfIcon = document.getElementById('perfIcon');
+
+            function setDarkMode(isDark) {
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                    themeThumb.classList.remove('translate-x-0');
+                    themeThumb.classList.add('translate-x-7', 'md:translate-x-6');
+                    themeIcon.className = 'fas fa-moon text-indigo-500 text-[10px] md:text-[8px]';
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    themeThumb.classList.remove('translate-x-7', 'md:translate-x-6');
+                    themeThumb.classList.add('translate-x-0');
+                    themeIcon.className = 'fas fa-sun text-amber-500 text-[10px] md:text-[8px]';
+                }
+            }
+
+            const isDark = localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            setDarkMode(isDark);
+            themeToggleBtn.addEventListener('click', () => {
+                const newTheme = !document.documentElement.classList.contains('dark');
+                setDarkMode(newTheme);
+                localStorage.theme = newTheme ? 'dark' : 'light';
+            });
+
+            function setPerformanceMode(isSimple) {
+                if (isSimple) {
+                    document.documentElement.classList.add('simple-mode'); 
+                    perfThumb.classList.remove('translate-x-0');
+                    perfThumb.classList.add('translate-x-7', 'md:translate-x-6');
+                    perfIcon.className = 'fas fa-bolt text-amber-500 text-[10px] md:text-[8px]'; 
+                } else {
+                    document.documentElement.classList.remove('simple-mode');
+                    perfThumb.classList.remove('translate-x-7', 'md:translate-x-6');
+                    perfThumb.classList.add('translate-x-0');
+                    perfIcon.className = 'fas fa-magic text-purple-500 text-[10px] md:text-[8px]'; 
+                }
+            }
+
+            const isSimple = document.documentElement.classList.contains('simple-mode');
+            setPerformanceMode(isSimple);
+            perfToggleBtn.addEventListener('click', () => {
+                const newMode = !document.documentElement.classList.contains('simple-mode');
+                setPerformanceMode(newMode);
+                localStorage.setItem('simpleMode', newMode);
+            });
+
+            const settingsPanel = document.getElementById('settingsPanel');
+            const settingsHeader = document.getElementById('settingsHeader');
+            const settingsTooltip = document.getElementById('settingsTooltip');
+
+            if (settingsPanel && settingsHeader) {
+                setTimeout(() => {
+                    if (settingsTooltip) {
+                        settingsTooltip.classList.remove('opacity-0', 'translate-x-4');
+                        settingsTooltip.classList.add('opacity-100', 'translate-x-0');
+                    }
+                }, 500);
+
+                setTimeout(() => {
+                    settingsPanel.classList.add('settings-collapsed');
+                    if (settingsTooltip) {
+                        settingsTooltip.classList.remove('opacity-100', 'translate-x-0');
+                        settingsTooltip.classList.add('opacity-0', 'translate-x-4');
+                    }
+                }, 10000);
+
+                settingsHeader.addEventListener('click', () => {
+                    settingsPanel.classList.toggle('settings-collapsed');
+                    if (settingsTooltip) {
+                        settingsTooltip.classList.remove('opacity-100', 'translate-x-0');
+                        settingsTooltip.classList.add('opacity-0', 'translate-x-4');
+                    }
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!settingsPanel.contains(e.target) && (!settingsTooltip || !settingsTooltip.contains(e.target)) && !settingsPanel.classList.contains('settings-collapsed')) {
+                        settingsPanel.classList.add('settings-collapsed');
+                        if (settingsTooltip) {
+                            settingsTooltip.classList.remove('opacity-100', 'translate-x-0');
+                            settingsTooltip.classList.add('opacity-0', 'translate-x-4');
+                        }
+                    }
+                });
+            }
+        }
+
+        function renderTabs() {
+            const tabsContainer = document.getElementById('categoryTabs');
+            tabsContainer.innerHTML = '';
+            
+            const indicator = document.createElement('div');
+            indicator.id = 'tabIndicator';
+            indicator.className = 'absolute rounded-full bg-red-600/95 border border-red-500 transition-all duration-300 ease-out z-0';
+            tabsContainer.appendChild(indicator);
+
+            let activeBtnElement = null;
+
+            courseData.forEach(category => {
+                const btn = document.createElement('button');
+                btn.className = 'relative z-10 whitespace-nowrap px-5 sm:px-6 py-3 rounded-full font-bold text-sm flex items-center transition-colors duration-300 border border-transparent text-slate-800 dark:text-slate-200 hover:bg-black/5 dark:hover:bg-white/10';
+                btn.innerHTML = `<i class="fas ${category.icon} mr-2 md:mr-2.5 text-red-600 dark:text-red-400 transition-colors duration-300"></i> <span class="transition-colors duration-300">${category.name}</span>`;
+                
+                btn.onclick = () => {
+                    currentCategory = category.id;
+                    activeBtnElement = btn; 
+                    updateTabs(btn);
+                    filterQuizzes(); 
+                };
+
+                tabsContainer.appendChild(btn);
+                if (currentCategory === category.id) { activeBtnElement = btn; }
+            });
+
+            if (activeBtnElement) {
+                setTimeout(() => { updateTabs(activeBtnElement); }, 200); 
+                window.addEventListener('resize', () => {
+                    if (activeBtnElement) updateTabs(activeBtnElement);
+                });
+            }
+        }
+
+        function updateTabs(activeBtn) {
+            const indicator = document.getElementById('tabIndicator');
+            const container = document.getElementById('categoryTabs');
+            if (activeBtn.offsetWidth > 0) {
+                indicator.style.left = `${activeBtn.offsetLeft}px`;
+                indicator.style.top = `${activeBtn.offsetTop}px`;
+                indicator.style.width = `${activeBtn.offsetWidth}px`;
+                indicator.style.height = `${activeBtn.offsetHeight}px`;
+                indicator.style.transform = 'none';
+            }
+            const allBtns = container.querySelectorAll('button');
+            allBtns.forEach(btn => {
+                const icon = btn.querySelector('i');
+                if (btn === activeBtn) {
+                    btn.classList.add('text-white');
+                    btn.classList.remove('text-slate-800', 'dark:text-slate-200', 'hover:bg-black/5', 'dark:hover:bg-white/10');
+                    icon.classList.add('text-white');
+                    icon.classList.remove('text-red-600', 'dark:text-red-400');
+                } else {
+                    btn.classList.remove('text-white');
+                    btn.classList.add('text-slate-800', 'dark:text-slate-200', 'hover:bg-black/5', 'dark:hover:bg-white/10');
+                    icon.classList.remove('text-white');
+                    icon.classList.add('text-red-600', 'dark:text-red-400');
+                }
+            });
+        }
+
+        let quizCardsCache = [];
+
+        function buildQuizzes() {
+            const container = document.getElementById('quizContainer');
+            container.innerHTML = '';
+            quizCardsCache = [];
+            let delayIndex = 0;
+
+            courseData.forEach(category => {
+                if (category.id === 'all') return; 
+
+                const categoryQuizzes = category.quizzes || [];
+                categoryQuizzes.forEach(quiz => {
+                    const wrapper = document.createElement('div');
+                    wrapper.dataset.category = category.id;
+                    wrapper.dataset.searchString = (quiz.title + ' ' + category.name).toLowerCase();
+                    wrapper.className = 'w-full md:w-1/2 lg:w-1/3 px-2 sm:px-3 md:px-4 mb-4 sm:mb-6 md:mb-8 animate-tab-switch z-10 hover:z-20 block';
+                    wrapper.style.animationDelay = `${delayIndex * 70}ms`;
+                    wrapper.style.display = 'none'; 
+                    delayIndex++;
+
+                    const card = document.createElement('div');
+                    card.className = 'glass-panel rounded-[2rem] p-5 sm:p-6 flex flex-col w-full h-max hover:-translate-y-1 group transition-transform duration-300';
+                    
+                    let buttonsHtml = '';
+                    if (quiz.isUpcoming) {
+                        buttonsHtml = `
+                            <div class="opacity-60 cursor-not-allowed w-full">
+                                <button disabled class="pointer-events-none w-full flex items-center justify-center px-4 py-3 bg-white/70 dark:bg-slate-800/80 border border-white/80 dark:border-slate-500/50 text-slate-900 dark:text-white rounded-2xl font-extrabold text-sm shadow-sm backdrop-blur-md">
+                                    <i class="fas fa-clone mr-2.5 text-blue-600 dark:text-blue-400"></i> Thẻ ghi nhớ (Flashcards)
+                                </button>
+                            </div>
+                            <div class="opacity-60 cursor-not-allowed w-full">
+                                <button disabled class="pointer-events-none glass-action-btn w-full flex items-center justify-center px-4 py-3 md:py-3.5 rounded-2xl font-extrabold text-sm shadow-sm block">
+                                    <i class="fas fa-gamepad mr-2.5"></i> Link Quizizz Ôn tập
+                                </button>
+                            </div>
+                        `;
+                    } else {
+                        buttonsHtml = `
+                            <button data-action="showDisclaimer" data-link="${quiz.flashcardLink}" 
+                               class="w-full flex items-center justify-center px-4 py-3 bg-white/70 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 border border-white/80 dark:border-slate-500/50 text-slate-900 dark:text-white rounded-2xl transition-all font-extrabold text-sm shadow-sm backdrop-blur-md">
+                                <i class="fas fa-clone mr-2.5 text-blue-600 dark:text-blue-400"></i> Thẻ ghi nhớ (Flashcards)
+                            </button>
+                            <button data-action="showDisclaimer" data-link="${quiz.quizLink}" 
+                               class="glass-action-btn w-full flex items-center justify-center px-4 py-3 md:py-3.5 rounded-2xl font-extrabold text-sm shadow-sm block">
+                                <i class="fas fa-gamepad mr-2.5"></i> Link Quizizz Ôn tập
+                            </button>
+                        `;
+                    }
+
+                    card.innerHTML = `
+                        <div class="flex-grow relative z-10">
+                            <div class="flex justify-between items-start space-x-2 mb-4 md:mb-5">
+                                <span class="inline-flex items-start px-3 py-1.5 rounded-xl text-[11px] md:text-xs font-bold glass-button text-red-700 dark:text-red-400 max-w-[65%] md:max-w-[70%] leading-relaxed shadow-sm">
+                                    <i class="fas ${category.icon} mt-[3px] mr-1.5 flex-shrink-0"></i> 
+                                    <span class="text-left break-words">${category.name}</span>
+                                </span>
+                                <div class="text-[11px] md:text-xs font-bold text-slate-700 dark:text-slate-300 glass-button px-3 py-1.5 rounded-xl flex items-center flex-shrink-0 whitespace-nowrap shadow-sm">
+                                    <i class="fas fa-clock mr-1.5 text-amber-600 dark:text-amber-400"></i> ${quiz.questions}
+                                </div>
+                            </div>
+                            <h3 class="text-lg md:text-xl font-extrabold text-slate-900 dark:text-white mb-2 md:mb-3 leading-tight drop-shadow-sm">
+                                ${quiz.title}
+                            </h3>
+                            <p class="text-sm text-slate-800 dark:text-slate-200 mb-4 leading-relaxed font-semibold opacity-90 border-l-2 border-amber-500 pl-3">${quiz.desc}</p>
+                            
+                            ${quiz.history && !quiz.isUpcoming ? `
+                            <div class="text-[11px] text-slate-700 dark:text-slate-300 mb-5 md:mb-6 font-mono font-medium leading-relaxed glass-button p-3.5 rounded-2xl">
+                                <div class="font-bold text-slate-900 dark:text-white mb-2 flex items-center"><i class="fas fa-history mr-2 text-blue-600 dark:text-blue-400"></i> Lịch sử cập nhật:</div>
+                                ${quiz.history.map(item => `<div class="ml-1.5 opacity-90 mb-1 last:mb-0">- ${item}</div>`).join('')}
+                            </div>
+                            ` : ''}
+
+                            ${quiz.isUpcoming ? `
+                            <div class="text-[11px] text-amber-700 dark:text-amber-400 mb-5 md:mb-6 font-mono font-medium leading-relaxed glass-button p-3.5 rounded-2xl">
+                                <div class="font-bold flex items-center"><i class="fas fa-calendar-alt mr-2 text-amber-600 dark:text-amber-400"></i> Dự kiến phát hành:</div>
+                                <div class="ml-1.5 opacity-90 mt-1 font-extrabold">- ${quiz.releaseDate}</div>
+                            </div>
+                            ` : ''}
+                        </div>
+                        <div class="mt-auto pt-4 md:pt-5 border-t border-slate-300/50 dark:border-slate-600/50 flex flex-col space-y-3 relative z-10">
+                            ${buttonsHtml}
+                        </div>
+                    `;
+                    
+                    wrapper.appendChild(card);
+                    container.appendChild(wrapper);
+                    quizCardsCache.push(wrapper);
+                });
+            });
+
+            const disclaimerButtons = container.querySelectorAll('[data-action="showDisclaimer"]');
+            disclaimerButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    showDisclaimer(this.getAttribute('data-link'));
+                });
+            });
+
+            filterQuizzes();
+        }
+
+        function filterQuizzes() {
+            const container = document.getElementById('quizContainer');
+            const emptyState = document.getElementById('emptyState');
+            let hasResults = false;
+
+            quizCardsCache.forEach(card => {
+                const matchCategory = currentCategory === 'all' || card.dataset.category === currentCategory;
+                const matchSearch = !searchQuery || card.dataset.searchString.includes(searchQuery);
+                const isCurrentlyVisible = card.classList.contains('show');
+                const shouldBeVisible = matchCategory && matchSearch;
+
+                if (shouldBeVisible) {
+                    if (!isCurrentlyVisible) {
+                        card.style.display = ''; 
+                        void card.offsetWidth; 
+                        card.classList.add('show');
+                    }
+                    hasResults = true;
+                } else {
+                    if (isCurrentlyVisible || card.style.display !== 'none') {
+                        card.style.display = 'none'; 
+                        card.classList.remove('show');
+                    }
+                }
+            });
+
+            if (!hasResults) {
+                container.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+            } else {
+                container.classList.remove('hidden');
+                emptyState.classList.add('hidden');
+            }
+        }
+
+        let pendingLink = '';
+
+        function showDisclaimer(link) {
+            pendingLink = link;
+            const modal = document.getElementById('disclaimerModal');
+            const overlay = document.getElementById('disclaimerOverlay');
+            const content = document.getElementById('disclaimerContent');
+            
+            if(modal && content && overlay) {
+                modal.classList.remove('pointer-events-none');
+                requestAnimationFrame(() => {
+                    overlay.classList.remove('opacity-0');
+                    overlay.classList.add('opacity-100');
+                    content.classList.remove('opacity-0', 'scale-95');
+                    content.classList.add('opacity-100', 'scale-100');
+                });
+            }
+        }
+
+        function hideDisclaimer() {
+            const modal = document.getElementById('disclaimerModal');
+            const overlay = document.getElementById('disclaimerOverlay');
+            const content = document.getElementById('disclaimerContent');
+            
+            if(modal && content && overlay) {
+                overlay.classList.remove('opacity-100');
+                overlay.classList.add('opacity-0');
+                content.classList.remove('opacity-100', 'scale-100');
+                content.classList.add('opacity-0', 'scale-95');
+                setTimeout(() => { 
+                    modal.classList.add('pointer-events-none');
+                    pendingLink = ''; 
+                }, 300); 
+            }
+        }
+
+        const btnAgree = document.getElementById('btnAgree');
+        if(btnAgree) {
+            btnAgree.addEventListener('click', () => {
+                if (pendingLink) { window.open(pendingLink, '_blank'); }
+                hideDisclaimer();
+            });
+        }
+        
+        const btnCancel = document.getElementById('btnCancel');
+        if(btnCancel) { btnCancel.addEventListener('click', hideDisclaimer); }
+
+        const disclaimerOverlay = document.getElementById('disclaimerOverlay');
+        if(disclaimerOverlay) { disclaimerOverlay.addEventListener('click', hideDisclaimer); }
+
+        init();
+    </script>
+</body>
+</html>
